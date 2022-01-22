@@ -1,17 +1,28 @@
 import {
-  Link,
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration
-} from "remix";
+  ScrollRestoration,
+} from 'remix';
+import bedorcss from 'bedrocss/bedrocss.min.css';
 
+/**
+ *
+ */
 export function meta() {
-  return { title: "New Remix App" };
+  return { title: 'New Remix App' };
 }
 
+/** @type {import('remix').LinksFunction} */
+export const links = () => {
+  return [{ rel: 'stylesheet', href: bedorcss }];
+};
+
+/**
+ *
+ */
 export default function App() {
   return (
     <html lang="en">
@@ -22,11 +33,10 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Link to="/posts">Posts</Link>
         <Outlet />
         <ScrollRestoration />
         <Scripts />
-        {process.env.NODE_ENV === "development" && <LiveReload />}
+        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
   );

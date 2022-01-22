@@ -1,32 +1,29 @@
+import styles from './index.css';
+
+/** @type {import('remix').LinksFunction} */
+export const links = () => {
+  return [{ rel: 'stylesheet', href: styles }];
+};
+
+const wurdle = 'trout';
+
+// eslint-disable-next-line unicorn/no-new-array
+const guesses = new Array(6).fill().map(() => new Array(5).fill('N'));
+
+/**
+ *
+ */
 export default function Index() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
+    <div>
+      <h1>Wurdle</h1>
+      {guesses.map((letters, guessIndex) => (
+        <div key={guessIndex} class="grid columns-6">
+          {letters.map((letter, letterIndex) => (
+            <div key={letterIndex}>{letter}</div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
