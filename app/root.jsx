@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
 } from 'remix';
 import bedorcss from 'bedrocss/bedrocss.min.css';
+import { guesses } from './guesses';
 
 /**
  *
@@ -18,6 +19,13 @@ export function meta() {
 /** @type {import('remix').LinksFunction} */
 export const links = () => {
   return [{ rel: 'stylesheet', href: bedorcss }];
+};
+
+/** @type {import('remix').ActionFunction} */
+export const action = async ({ request }) => {
+  const body = await request.formData();
+  guesses.push([...body.get('guess')]);
+  return guesses;
 };
 
 /**
