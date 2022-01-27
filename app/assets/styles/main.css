@@ -27,6 +27,6 @@
   background-color: goldenrod;
 }
 
-.letter:empty {
-  box-shadow: inset 0 0 0 .25rem slategray;
+.letter {
+  box-shadow: inset 0 0 0 2px slategray;
 }

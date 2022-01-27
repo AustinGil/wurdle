@@ -1,4 +1,5 @@
 import { useLoaderData } from 'remix';
+import { useState } from 'react';
 import styles from '../assets/styles/main.css';
 import { guesses } from '../guesses';
 
@@ -16,24 +17,34 @@ export function loader() {
 
 let wurdle = 'trout';
 
-// const [currentGuess, setCurrentGuess] = useState('');
-
 /**
  *
  */
 export default function Index() {
-  const guesses = useLoaderData();
-  const guessesGrid = Array.from({ length: 6 }, (_, index) => {
-    return guesses[index] || Array.from({ length: 5 }, () => '');
-  });
+  const previousGuesses = useLoaderData();
+
+  const [currentGuess, setCurrentGuess] = useState(Array.from({ length: 5 }));
+
+  const [remainingGuesses, setRemainingGuess] = useState(
+    Array.from({ length: 5 - previousGuesses.length })
+  );
+
+  // Update the current guess data to the guess input
+  const handleChange = (event) => {
+    const value = event.target.value;
+    const newGuess = Array.from({ length: 5 }, (_, index) => {
+      return value[index] || '';
+    });
+    setCurrentGuess(newGuess);
+  };
 
   return (
     <div>
       <h1>Wurdle</h1>
       <div className="grid gap-4 columns-5">
-        {guessesGrid.map((letters) => (
-          <>
-            {letters.map((letter, letterIndex) => (
+        {previousGuesses.map((guess, guessIndex) => (
+          <React.Fragment key={guessIndex}>
+            {guess.map((letter, letterIndex) => (
               <div
                 key={letterIndex}
                 className={`letter p-4 ${
@@ -49,7 +60,21 @@ export default function Index() {
                 {letter}
               </div>
             ))}
-          </>
+          </React.Fragment>
+        ))}
+
+        {currentGuess.map((letter, letterIndex) => (
+          <div key={letterIndex} className="letter p-4">
+            {letter}
+          </div>
+        ))}
+
+        {remainingGuesses.map((_, index) => (
+          <React.Fragment key={index}>
+            {Array.from({ length: 5 }, (_, index) => (
+              <div key={index} className="letter p-4"></div>
+            ))}
+          </React.Fragment>
         ))}
       </div>
 
@@ -59,6 +84,8 @@ export default function Index() {
           <input
             id="guess"
             name="guess"
+            value={currentGuess.join('')}
+            onChange={handleChange}
             autoFocus
             minLength={5}
             maxLength={5}
