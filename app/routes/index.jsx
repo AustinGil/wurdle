@@ -1,6 +1,7 @@
 import { useLoaderData } from 'remix';
 import { useState } from 'react';
 import styles from '../assets/styles/main.css';
+import { getSession, commitSession } from '../sessions.js';
 import { guesses } from '../guesses';
 
 /** @type {import('remix').LinksFunction} */
@@ -9,9 +10,23 @@ export const links = () => {
 };
 
 /**
- *
+ * @param root0
+ * @param root0.request
  */
-export function loader() {
+export async function loader({ request }) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  if (!session.has('guesses')) {
+    session.set('guesses', []);
+    await commitSession(session);
+  }
+
+  // return json(guesses, {
+  //   headers: {
+  //     'Set-Cookie': await commitSession(session),
+  //   },
+  // });
+
   return guesses;
 }
 
@@ -21,21 +36,16 @@ let wurdle = 'trout';
  *
  */
 export default function Index() {
+  /** @type {string[]} */
   const previousGuesses = useLoaderData();
 
-  const [currentGuess, setCurrentGuess] = useState(Array.from({ length: 5 }));
+  const [currentGuess, setCurrentGuess] = useState('');
 
-  const [remainingGuesses, setRemainingGuess] = useState(
-    Array.from({ length: 5 - previousGuesses.length })
-  );
+  const remainingGuesses = Array.from({ length: 5 - previousGuesses.length });
 
   // Update the current guess data to the guess input
   const handleChange = (event) => {
-    const value = event.target.value;
-    const newGuess = Array.from({ length: 5 }, (_, index) => {
-      return value[index] || '';
-    });
-    setCurrentGuess(newGuess);
+    setCurrentGuess(event.target.value);
   };
 
   return (
@@ -44,7 +54,7 @@ export default function Index() {
       <div className="grid gap-4 columns-5">
         {previousGuesses.map((guess, guessIndex) => (
           <React.Fragment key={guessIndex}>
-            {guess.map((letter, letterIndex) => (
+            {guess.split('').map((letter, letterIndex) => (
               <div
                 key={letterIndex}
                 className={`letter p-4 ${
@@ -63,9 +73,9 @@ export default function Index() {
           </React.Fragment>
         ))}
 
-        {currentGuess.map((letter, letterIndex) => (
-          <div key={letterIndex} className="letter p-4">
-            {letter}
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className="letter p-4">
+            {currentGuess[index] || ''}
           </div>
         ))}
 
@@ -84,7 +94,7 @@ export default function Index() {
           <input
             id="guess"
             name="guess"
-            value={currentGuess.join('')}
+            value={currentGuess}
             onChange={handleChange}
             autoFocus
             minLength={5}

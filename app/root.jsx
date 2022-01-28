@@ -24,7 +24,7 @@ export const links = () => {
 /** @type {import('remix').ActionFunction} */
 export const action = async ({ request }) => {
   const body = await request.formData();
-  guesses.push([...body.get('guess')]);
+  guesses.push(body.get('guess'));
   return guesses;
 };
 
