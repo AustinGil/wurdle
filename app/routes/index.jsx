@@ -1,8 +1,8 @@
-import { useLoaderData } from 'remix';
+import { useLoaderData, json } from 'remix';
 import { useState } from 'react';
 import styles from '../assets/styles/main.css';
 import { getSession, commitSession } from '../sessions.js';
-import { guesses } from '../guesses';
+import words from '../words.js';
 
 /** @type {import('remix').LinksFunction} */
 export const links = () => {
@@ -15,27 +15,30 @@ export const links = () => {
  */
 export async function loader({ request }) {
   const session = await getSession(request.headers.get('Cookie'));
+  let guesses = [];
 
-  if (!session.has('guesses')) {
-    session.set('guesses', []);
-    await commitSession(session);
+  if (session.has('guesses')) {
+    guesses = session.get('guesses');
   }
+  session.set('guesses', guesses);
 
-  // return json(guesses, {
-  //   headers: {
-  //     'Set-Cookie': await commitSession(session),
-  //   },
-  // });
-
-  return guesses;
+  return json(guesses, {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
-let wurdle = 'trout';
+const wurdle = 'trout';
 
 /**
  *
  */
 export default function Index() {
+  // eslint-disable-next-line prettier/prettier
+  // eslint-disable-next-line unicorn/prefer-date-now
+  console.log(words[new Date() % words.length]);
+
   /** @type {string[]} */
   const previousGuesses = useLoaderData();
 
@@ -51,20 +54,20 @@ export default function Index() {
   return (
     <div>
       <h1>Wurdle</h1>
-      <div className="grid gap-4 columns-5">
+      <div className="board grid gap-4 columns-5 place-center margin-y-48">
         {previousGuesses.map((guess, guessIndex) => (
           <React.Fragment key={guessIndex}>
             {guess.split('').map((letter, letterIndex) => (
               <div
                 key={letterIndex}
-                className={`letter p-4 ${
+                className={`letter grid place-center p-4 ${
                   !letter
                     ? ''
-                    : (wurdle[letterIndex] === letter
+                    : wurdle[letterIndex] === letter
                     ? 'bg-green'
                     : wurdle.includes(letter)
                     ? 'bg-yellow'
-                    : 'bg-grey')
+                    : 'bg-grey'
                 }`}
               >
                 {letter}
@@ -74,7 +77,7 @@ export default function Index() {
         ))}
 
         {Array.from({ length: 5 }, (_, index) => (
-          <div key={index} className="letter p-4">
+          <div key={index} className="letter grid place-center p-4">
             {currentGuess[index] || ''}
           </div>
         ))}

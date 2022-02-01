@@ -1,5 +1,4 @@
 import { createCookieSessionStorage } from 'remix';
-import { guesses } from './cookies';
 
 const { getSession, commitSession, destroySession } =
   createCookieSessionStorage({

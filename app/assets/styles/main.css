@@ -7,6 +7,12 @@
 .columns-5 {
   grid-template-columns: repeat(5, 1fr);
 }
+.place-center {
+  place-content: center;
+}
+.margin-y-48 {
+  margin-block: 3rem;
+}
 .border-1 {
   border: 1px solid;
 }
@@ -16,6 +22,7 @@
 .p-4 {
   padding: .25rem;
 }
+
 
 .bg-grey {
   background-color: slategray;
@@ -27,6 +34,9 @@
   background-color: goldenrod;
 }
 
+.board {
+  grid-template: repeat(6, 3rem) / repeat(5, 3rem);
+}
 .letter {
   box-shadow: inset 0 0 0 2px slategray;
 }

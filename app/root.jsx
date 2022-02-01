@@ -5,9 +5,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  redirect,
 } from 'remix';
 import bedorcss from 'bedrocss/bedrocss.min.css';
-import { guesses } from './guesses';
+import { getSession, commitSession } from './sessions';
 
 /**
  *
@@ -23,9 +24,22 @@ export const links = () => {
 
 /** @type {import('remix').ActionFunction} */
 export const action = async ({ request }) => {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  if (!session.has('guesses')) {
+      return redirect('/');
+  }
+
   const body = await request.formData();
+  const guesses = session.get('guesses');
   guesses.push(body.get('guess'));
-  return guesses;
+  session.set('guesses', guesses);
+
+  return redirect('/', {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 };
 
 /**
