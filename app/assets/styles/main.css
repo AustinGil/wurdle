@@ -1,3 +1,12 @@
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
 .grid {
   display: grid;
 }
@@ -19,24 +28,32 @@
 .border-grey {
   border-color: slategray;
 }
+.p-0 {
+  padding: 0;
+}
 .p-4 {
   padding: .25rem;
 }
 
-
+.color-red {
+  color: red;
+}
 .bg-grey {
-  background-color: slategray;
+  background-color: dimgray;
 }
 .bg-green {
-  background-color: chartreuse;
+  background-color: forestgreen;
 }
 .bg-yellow {
   background-color: goldenrod;
 }
 
 .board {
-  grid-template: repeat(6, 3rem) / repeat(5, 3rem);
+  grid-template-rows: repeat(6, 3rem);
 }
-.letter {
+.word {
+  grid-template-columns: repeat(5, 3rem);
+}
+.unknown-letter {
   box-shadow: inset 0 0 0 2px slategray;
 }

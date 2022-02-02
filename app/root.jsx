@@ -8,7 +8,8 @@ import {
   redirect,
 } from 'remix';
 import bedorcss from 'bedrocss/bedrocss.min.css';
-import { getSession, commitSession } from './sessions';
+import { getSession, commitSession } from './sessions.js';
+import { allWords, getWordOfTheDay } from './words.js';
 
 /**
  *
@@ -27,13 +28,26 @@ export const action = async ({ request }) => {
   const session = await getSession(request.headers.get('Cookie'));
 
   if (!session.has('guesses')) {
-      return redirect('/');
+    return redirect('/');
   }
 
+  const wordOfTheDay = getWordOfTheDay();
   const body = await request.formData();
-  const guesses = session.get('guesses');
-  guesses.push(body.get('guess'));
-  session.set('guesses', guesses);
+  const currentGuess = body.get('guess').toLocaleLowerCase();
+  const previousGuesses = session.get('guesses');
+
+  if (!allWords.includes(currentGuess)) {
+    session.flash('errorMessage', `That's not a word!`);
+  } else {
+    if (currentGuess === wordOfTheDay) {
+      session.flash(
+        'successMessage',
+        `Nailed it! The word was ${wordOfTheDay}`
+      );
+    }
+    previousGuesses.push(currentGuess);
+    session.set('guesses', previousGuesses);
+  }
 
   return redirect('/', {
     headers: {
