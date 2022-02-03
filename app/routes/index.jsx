@@ -3,6 +3,7 @@ import { useState } from 'react';
 import styles from '../assets/styles/main.css';
 import { getSession, commitSession } from '../sessions.js';
 import { getWordOfTheDay } from '../words.js';
+import keyboardRows from '../keyboardRows.js';
 
 /** @type {import('remix').LinksFunction} */
 export const links = () => {
@@ -22,11 +23,9 @@ export async function loader({ request }) {
   }
   session.set('guesses', previousGuesses);
   const errorMessage = session.get('errorMessage') || null;
-  const successMessage = session.get('successMessage') || null;
 
   const data = {
     errorMessage,
-    successMessage,
     previousGuesses,
   };
   return json(data, {
@@ -42,12 +41,12 @@ const wordOfTheDay = getWordOfTheDay();
  *
  */
 export default function Index() {
-  /** @type {{ previousGuesses: string[], errorMessage: string, successMessage: string }} */
-  const { previousGuesses, errorMessage, successMessage } = useLoaderData();
+  /** @type {{ previousGuesses: string[], errorMessage: string }} */
+  const { previousGuesses, errorMessage } = useLoaderData();
 
   const [currentGuess, setCurrentGuess] = useState('');
 
-  const remainingGuesses = Array.from({ length: 5 - previousGuesses.length });
+  const remainingGuesses = Array.from({ length: 6 - previousGuesses.length });
   const hasWon = previousGuesses.at(-1) === wordOfTheDay;
   const hasMoreGuesses = !hasWon && remainingGuesses.length > 0;
   const hasLost = !hasWon && !hasMoreGuesses;
@@ -56,6 +55,16 @@ export default function Index() {
   const handleChange = (event) => {
     setCurrentGuess(event.target.value);
   };
+
+  const keyboard = keyboardRows.map((row) => {
+    return row.split('').map((letter) => {
+      const isUsed = previousGuesses.some((guess) => guess.includes(letter));
+      return {
+        key: letter,
+        isUsed,
+      };
+    });
+  });
 
   return (
     <div>
@@ -69,20 +78,20 @@ export default function Index() {
         <p className="color-green">Nice! You got it. Come back tomorrow!</p>
       )}
 
-      <ul className="board grid gap-4 place-center margin-y-48 p-0">
+      <ul className="board grid gap-4 place-center margin-y-48 padding-0">
         {previousGuesses.map((guess, guessIndex) => (
           <li key={guessIndex} className="word grid gap-4">
             {guess.split('').map((letter, letterIndex) => (
               <span
                 key={letterIndex}
-                className={`grid place-center p-4 ${
+                className={`grid place-center padding-4 ${
                   !letter
                     ? ''
-                    : wordOfTheDay[letterIndex] === letter
+                    : (wordOfTheDay[letterIndex] === letter
                     ? 'bg-green'
                     : wordOfTheDay.includes(letter)
                     ? 'bg-yellow'
-                    : 'bg-grey'
+                    : 'bg-grey')
                 }`}
               >
                 {letter}
@@ -91,26 +100,21 @@ export default function Index() {
           </li>
         ))}
 
-        {hasMoreGuesses && (
-          <li className="word grid gap-4">
-            {Array.from({ length: 5 }, (_, index) => (
-              <div key={index} className="unknown-letter grid place-center p-4">
-                {currentGuess[index] || ''}
-              </div>
-            ))}
-          </li>
-        )}
-
-        {remainingGuesses.map((_, index) => (
-          <li key={index} className="word grid gap-4">
-            {Array.from({ length: 5 }, (_, index) => (
-              <div key={index} className="unknown-letter p-4"></div>
+        {remainingGuesses.map((_, rowIndex) => (
+          <li key={rowIndex} className="word grid gap-4">
+            {Array.from({ length: 5 }, (_, letterIndex) => (
+              <span
+                key={letterIndex}
+                className="unknown-letter grid place-center padding-4"
+              >
+                {(rowIndex === 0 && currentGuess[letterIndex]) || ''}
+              </span>
             ))}
           </li>
         ))}
       </ul>
 
-      {!hasWon && (
+      {hasMoreGuesses && (
         <form method="POST" className="visually-hidden">
           <label htmlFor="guess">
             What's your guess?
@@ -128,6 +132,25 @@ export default function Index() {
           <button type="submit">Submit</button>
         </form>
       )}
+
+      <div className="grid gap-4 justify-center">
+        {keyboard.map((row, index) => (
+          <ul
+            key={index}
+            className="flex gap-4 justify-center margin-0 padding-0"
+          >
+            {row.map((letter) => (
+              <li key={letter.key} className="grid place-center">
+                <button
+                  className={`key ${letter.isUsed ? 'bg-red' : 'bg-grey'}`}
+                >
+                  {letter.key}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
     </div>
   );
 }

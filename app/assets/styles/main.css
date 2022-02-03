@@ -1,11 +1,11 @@
 .visually-hidden {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
-  height: 1px;
+  block-size: 1px;
   overflow: hidden;
   position: absolute;
   white-space: nowrap;
-  width: 1px;
+  inline-size: 1px;
 }
 .grid {
   display: grid;
@@ -19,6 +19,15 @@
 .place-center {
   place-content: center;
 }
+.justify-center {
+  justify-content: center;
+}
+.flex {
+  display: flex;
+}
+.margin-0 {
+  margin: 0;
+}
 .margin-y-48 {
   margin-block: 3rem;
 }
@@ -28,15 +37,18 @@
 .border-grey {
   border-color: slategray;
 }
-.p-0 {
+.padding-0 {
   padding: 0;
 }
-.p-4 {
+.padding-4 {
+  padding: .25rem;
+}
+.padding-4 {
   padding: .25rem;
 }
 
 .color-red {
-  color: red;
+  color: Maroon;
 }
 .bg-grey {
   background-color: dimgray;
@@ -47,6 +59,9 @@
 .bg-yellow {
   background-color: goldenrod;
 }
+.bg-red {
+  background-color: Maroon;
+}
 
 .board {
   grid-template-rows: repeat(6, 3rem);
@@ -56,4 +71,8 @@
 }
 .unknown-letter {
   box-shadow: inset 0 0 0 2px slategray;
+}
+.key {
+  inline-size: 2.5em;
+  block-size: 2.5em;
 }

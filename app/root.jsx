@@ -9,7 +9,7 @@ import {
 } from 'remix';
 import bedorcss from 'bedrocss/bedrocss.min.css';
 import { getSession, commitSession } from './sessions.js';
-import { allWords, getWordOfTheDay } from './words.js';
+import { allWords } from './words.js';
 
 /**
  *
@@ -31,7 +31,6 @@ export const action = async ({ request }) => {
     return redirect('/');
   }
 
-  const wordOfTheDay = getWordOfTheDay();
   const body = await request.formData();
   const currentGuess = body.get('guess').toLocaleLowerCase();
   const previousGuesses = session.get('guesses');
@@ -39,12 +38,6 @@ export const action = async ({ request }) => {
   if (!allWords.includes(currentGuess)) {
     session.flash('errorMessage', `That's not a word!`);
   } else {
-    if (currentGuess === wordOfTheDay) {
-      session.flash(
-        'successMessage',
-        `Nailed it! The word was ${wordOfTheDay}`
-      );
-    }
     previousGuesses.push(currentGuess);
     session.set('guesses', previousGuesses);
   }
