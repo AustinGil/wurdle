@@ -61,7 +61,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="grid justify-center padding-4">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

@@ -22,7 +22,7 @@ export async function loader({ request }) {
     previousGuesses = session.get('guesses');
   }
   session.set('guesses', previousGuesses);
-  const errorMessage = session.get('errorMessage') || null;
+  const errorMessage = session.get('errorMessage') || undefined;
 
   const data = {
     errorMessage,
@@ -58,24 +58,47 @@ export default function Index() {
 
   const keyboard = keyboardRows.map((row) => {
     return row.split('').map((letter) => {
-      const isUsed = previousGuesses.some((guess) => guess.includes(letter));
+      let status = 'UNUSED';
+      for (const guess of previousGuesses) {
+        if (wordOfTheDay.includes(letter)) {
+          if (guess.indexOf(letter) === wordOfTheDay.indexOf(letter)) {
+            status = 'CORRECT';
+            break;
+          }
+          if (guess.includes(letter)) {
+            status = 'CLOSE';
+            continue;
+          }
+        } else if (guess.includes(letter)) {
+          status = 'WRONG';
+          continue;
+        }
+      }
       return {
         key: letter,
-        isUsed,
+        status,
       };
     });
   });
 
   return (
-    <div>
+    <main className="max-w-480 margin-x-auto">
       <h1>Wurdle</h1>
 
-      {errorMessage && <p className="color-red">{errorMessage}</p>}
+      {errorMessage && (
+        <p className="color-red" role="alert">
+          {errorMessage}
+        </p>
+      )}
       {hasLost && (
-        <p className="color-red">Sorry chump. Better luck next time.</p>
+        <p className="color-red" role="alert">
+          Sorry chump. Better luck next time.
+        </p>
       )}
       {hasWon && (
-        <p className="color-green">Nice! You got it. Come back tomorrow!</p>
+        <p className="color-green" role="alert">
+          Nice! You got it. Come back tomorrow!
+        </p>
       )}
 
       <ul className="board grid gap-4 place-center margin-y-48 padding-0">
@@ -87,11 +110,11 @@ export default function Index() {
                 className={`grid place-center padding-4 ${
                   !letter
                     ? ''
-                    : (wordOfTheDay[letterIndex] === letter
+                    : wordOfTheDay[letterIndex] === letter
                     ? 'bg-green'
                     : wordOfTheDay.includes(letter)
                     ? 'bg-yellow'
-                    : 'bg-grey')
+                    : 'bg-grey'
                 }`}
               >
                 {letter}
@@ -137,12 +160,21 @@ export default function Index() {
         {keyboard.map((row, index) => (
           <ul
             key={index}
-            className="flex gap-4 justify-center margin-0 padding-0"
+            className="flex gap-4 wrap justify-center margin-0 padding-0"
           >
             {row.map((letter) => (
               <li key={letter.key} className="grid place-center">
                 <button
-                  className={`key ${letter.isUsed ? 'bg-red' : 'bg-grey'}`}
+                  data-status={letter.status}
+                  className={`key ${
+                    letter.status === 'CORRECT'
+                      ? 'bg-green'
+                      : letter.status === 'CLOSE'
+                      ? 'bg-yellow'
+                      : letter.status === 'WRONG'
+                      ? 'bg-red'
+                      : 'bg-grey'
+                  }`}
                 >
                   {letter.key}
                 </button>
@@ -151,6 +183,6 @@ export default function Index() {
           </ul>
         ))}
       </div>
-    </div>
+    </main>
   );
 }
