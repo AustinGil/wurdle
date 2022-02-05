@@ -8,8 +8,6 @@ import {
   redirect,
 } from 'remix';
 import bedorcss from 'bedrocss/bedrocss.min.css';
-import { getSession, commitSession } from './sessions.js';
-import { allWords } from './words.js';
 
 /**
  *
@@ -23,31 +21,7 @@ export const links = () => {
   return [{ rel: 'stylesheet', href: bedorcss }];
 };
 
-/** @type {import('remix').ActionFunction} */
-export const action = async ({ request }) => {
-  const session = await getSession(request.headers.get('Cookie'));
-
-  if (!session.has('guesses')) {
-    return redirect('/');
-  }
-
-  const body = await request.formData();
-  const currentGuess = body.get('guess').toLocaleLowerCase();
-  const previousGuesses = session.get('guesses');
-
-  if (!allWords.includes(currentGuess)) {
-    session.flash('errorMessage', `That's not a word!`);
-  } else {
-    previousGuesses.push(currentGuess);
-    session.set('guesses', previousGuesses);
-  }
-
-  return redirect('/', {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
-};
+export { action } from './routes/index.jsx';
 
 /**
  *

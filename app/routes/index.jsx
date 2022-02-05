@@ -1,8 +1,8 @@
-import { useLoaderData, json } from 'remix';
+import { useLoaderData, json, redirect, Form } from 'remix';
 import { useState } from 'react';
 import styles from '../assets/styles/main.css';
 import { getSession, commitSession } from '../sessions.js';
-import { getWordOfTheDay } from '../words.js';
+import { allWords, getWordOfTheDay } from '../words.js';
 import keyboardRows from '../keyboardRows.js';
 
 /** @type {import('remix').LinksFunction} */
@@ -35,6 +35,37 @@ export async function loader({ request }) {
   });
 }
 
+/** @type {import('remix').ActionFunction} */
+export const action = async ({ request }) => {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  if (!session.has('guesses')) {
+    return redirect('/');
+  }
+
+  const body = await request.formData();
+  const currentGuess = body.get('guess').toLocaleLowerCase();
+  const previousGuesses = session.get('guesses');
+
+  if (!allWords.includes(currentGuess)) {
+    session.flash('errorMessage', `That's not a word!`);
+  } else {
+    previousGuesses.push(currentGuess);
+    session.set('guesses', previousGuesses);
+  }
+
+  return json(
+    {
+      previousGuesses,
+    },
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    }
+  );
+};
+
 const wordOfTheDay = getWordOfTheDay();
 
 /**
@@ -54,6 +85,28 @@ export default function Index() {
   // Update the current guess data to the guess input
   const handleChange = (event) => {
     setCurrentGuess(event.target.value);
+  };
+  /** @param {MouseEvent} event */
+  const handleClick = (event) => {
+    /** @type {HTMLElement} */
+    const element = event.target;
+
+    if (element.localName !== 'button') return;
+
+    const key = element.dataset.key;
+
+    if (key === 'DELETE') {
+      setCurrentGuess(currentGuess.slice(0, -1));
+    } else if (key === 'ENTER') {
+      if (currentGuess.length < 5) {
+        event.preventDefault();
+      }
+    } else if (currentGuess.length < 5) {
+      setCurrentGuess(currentGuess + key);
+    }
+  };
+  const handleSubmit = () => {
+    setCurrentGuess('');
   };
 
   const keyboard = keyboardRows.map((row) => {
@@ -138,7 +191,7 @@ export default function Index() {
       </ul>
 
       {hasMoreGuesses && (
-        <form method="POST" className="visually-hidden">
+        <Form id="guess" method="POST" className="visually-hidden">
           <label htmlFor="guess">
             What's your guess?
             <input
@@ -153,10 +206,10 @@ export default function Index() {
             />
           </label>
           <button type="submit">Submit</button>
-        </form>
+        </Form>
       )}
 
-      <div className="grid gap-4 justify-center">
+      <div className="grid gap-4" onClick={handleClick}>
         {keyboard.map((row, index) => (
           <ul
             key={index}
@@ -165,7 +218,7 @@ export default function Index() {
             {row.map((letter) => (
               <li key={letter.key} className="grid place-center">
                 <button
-                  data-status={letter.status}
+                  data-key={letter.key}
                   className={`key ${
                     letter.status === 'CORRECT'
                       ? 'bg-green'
@@ -180,6 +233,21 @@ export default function Index() {
                 </button>
               </li>
             ))}
+
+            {index === keyboard.length - 1 && (
+              <>
+                <li className="-order-1 grid place-center">
+                  <button data-key="ENTER" className="key bg-grey" form="guess">
+                    Enter
+                  </button>
+                </li>
+                <li className="grid place-center">
+                  <button data-key="DELETE" className="key bg-grey">
+                    Delete
+                  </button>
+                </li>
+              </>
+            )}
           </ul>
         ))}
       </div>
